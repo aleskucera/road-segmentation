@@ -78,7 +78,7 @@ class RoadDataset(Dataset):
         self.cfg = cfg
         self.split = split
         self.path = cfg.ds.path
-        self.color_map = cfg.ds.color_map_inv if hasattr(cfg.ds, "color_map") else None
+        self.color_map = cfg.ds.color_map if hasattr(cfg.ds, "color_map") else None
         self.train_map = OmegaConf.to_container(cfg.ds.train_map, resolve=True) if hasattr(cfg.ds,
                                                                                            "train_map") else None
 
