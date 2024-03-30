@@ -1,6 +1,6 @@
 defaults:
   - _self_
-  - ds: landscape
+  - ds: rugd
   - model: deeplabv3_resnet50
 
 optimizer:
@@ -11,5 +11,6 @@ optimizer:
 train:
   batch_size: 2
   max_epochs: 100
+  num_workers: 4
 
 

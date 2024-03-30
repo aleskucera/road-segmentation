@@ -1,16 +1,11 @@
-from typing import Any
-
 import torch
 import hydra
-import wandb
-import lightning as L
+import pytorch_lightning as pl
 from omegaconf import DictConfig
-from lightning.pytorch.callbacks import Callback
-from lightning.pytorch.utilities.types import STEP_OUTPUT
 from torchmetrics.classification import Accuracy, JaccardIndex
 
 
-class RoadModel(L.LightningModule):
+class RoadModel(pl.LightningModule):
     def __init__(self, config: DictConfig, device: torch.device):
         super().__init__()
 
@@ -30,7 +25,6 @@ class RoadModel(L.LightningModule):
         self.validation_step_outputs = []
 
     def forward(self, image):
-        image = (image - self.mean) / self.std
         logits = self.model(image)['out']
         return logits
 
@@ -52,7 +46,7 @@ class RoadModel(L.LightningModule):
         return self.training_step_outputs[-1]
 
     def validation_step(self, batch, batch_idx):
-        self.validation_step_outputs.append(self.shared_step(batch, "valid"))
+        self.validation_step_outputs.append(self.shared_step(batch, "val"))
         return self.validation_step_outputs[-1]
 
     def test_step(self, batch, batch_idx):
