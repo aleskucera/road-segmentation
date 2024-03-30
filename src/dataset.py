@@ -224,7 +224,7 @@ def rugd_preprocessing(path: str, new_path: str, train_ratio: float = 0.8):
         samples = [sample for sample in os.listdir(os.path.join(labels_dir, dir)) if sample.endswith(".png")]
 
         # Copy the images and labels to the new directories
-        for sample in samples:
+        for sample in tqdm(samples):
             image_path = os.path.join(images_dir, dir, sample)
             label_path = os.path.join(labels_dir, dir, sample)
 
