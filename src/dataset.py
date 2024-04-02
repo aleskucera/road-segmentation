@@ -18,17 +18,17 @@ class RoadDataModule(L.LightningDataModule):
     def __init__(self, cfg: DictConfig):
         super().__init__()
         self.cfg = cfg
-        self.transform = A.Compose([
+        transform = A.Compose([
             A.Normalize(mean=cfg.ds.mean, std=cfg.ds.std, max_pixel_value=1.0),
             A.HorizontalFlip(p=0.5),
             A.RandomBrightnessContrast(always_apply=False,
-                                       p=1.0,
-                                       brightness_limit=(-0.2, 0.2),
-                                       contrast_limit=(-0.2, 0.2),
+                                       p=0.5,
+                                       brightness_limit=(-0.1, 0.1),
+                                       contrast_limit=(-0.1, 0.1),
                                        brightness_by_max=True),
             A.GaussNoise(always_apply=False,
-                         p=1.0,
-                         var_limit=(10.0, 50.0),
+                         p=0.5,
+                         var_limit=(0.05, 0.2),
                          per_channel=True, mean=0.0),
             A.PixelDropout(p=0.01),
         ])
