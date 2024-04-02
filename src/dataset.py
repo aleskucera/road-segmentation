@@ -273,9 +273,9 @@ def compute_mean_and_std(ds_name: str):
 
 
 if __name__ == "__main__":
-    # rugd_path = "/home/ales/school/robolab/road-segmentation/data/RUGD_base"
-    # new_rugd_path = "/home/ales/school/robolab/road-segmentation/data/RUGD"
-    #
-    # rugd_preprocessing(rugd_path, new_rugd_path)
+    rugd_path = "/home/ales/school/robolab/road-segmentation/data/RUGD_old"
+    new_rugd_path = "/home/ales/school/robolab/road-segmentation/data/RUGD"
 
-    compute_mean_and_std("rugd")
+    rugd_preprocessing(rugd_path, new_rugd_path)
+
+    # compute_mean_and_std("rugd")
