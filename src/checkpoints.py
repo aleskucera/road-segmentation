@@ -2,7 +2,7 @@ from pytorch_lightning.callbacks import ModelCheckpoint
 
 # Instantiate the ModelCheckpoint callback
 val_checkpoint = ModelCheckpoint(
-    monitor='valid_jaccard',
+    monitor='val_jaccard',
     dirpath='checkpoints/',
     filename='e{epoch:02d}-iou{val_jaccard:.2f}',
     save_last=True,

@@ -19,7 +19,7 @@ class RoadDataModule(L.LightningDataModule):
         super().__init__()
         self.cfg = cfg
         self.transform = A.Compose([
-            A.Normalize(mean=cfg.ds.mean, std=cfg.ds.std),
+            A.Normalize(mean=cfg.ds.mean, std=cfg.ds.std, max_pixel_value=1.0),
             A.HorizontalFlip(p=0.5),
             A.RandomBrightnessContrast(always_apply=False,
                                        p=1.0,
@@ -117,7 +117,7 @@ class RoadDataset(Dataset):
         label = np.array(Image.open(label_path))
 
         if self.cfg.ds.name == "rugd":
-            image = image / 255
+            image = image / 255.0
 
         if len(label.shape) == 3:
             assert self.color_map is not None, "Color map must be provided for RGB labels"
@@ -168,22 +168,47 @@ def map_to_label(rgb_image, color_map):
     return label_image
 
 
-def visualize_samples(dataset, num_samples=3):
+def visualize_samples(ds_name, num_samples=3):
+    ds_file = f"conf/ds/{ds_name}.yaml"
+    cfg = {"ds": {}}
+
+    with open(ds_file, 'r') as f:
+        cfg["ds"] = yaml.safe_load(f)
+
+    cfg = OmegaConf.create(cfg)
+
+    transform = A.Compose([
+        A.Normalize(mean=cfg.ds.mean, std=cfg.ds.std, max_pixel_value=1.0),
+        A.HorizontalFlip(p=0.5),
+        A.RandomBrightnessContrast(always_apply=False,
+                                   p=0.5,
+                                   brightness_limit=(-0.1, 0.1),
+                                   contrast_limit=(-0.1, 0.1),
+                                   brightness_by_max=True),
+        A.GaussNoise(always_apply=False,
+                     p=0.5,
+                     var_limit=(0.05, 0.2),
+                     per_channel=True, mean=0.0),
+        A.PixelDropout(p=0.01),
+    ])
+
+    ds = RoadDataset(cfg, transform)
+
     fig, axes = plt.subplots(num_samples, 2, figsize=(10, num_samples * 5))
 
     for i in range(num_samples):
-        idx = np.random.randint(len(dataset))
-        image, label = dataset[idx]
+        idx = np.random.randint(len(ds))
+        image, label = ds[idx]
 
         # Convert tensors to numpy arrays
         image = image.permute(1, 2, 0).numpy()
-        label = label.permute(1, 2, 0).numpy()
+        label = label.numpy()
 
         axes[i, 0].imshow(image)
         axes[i, 0].set_title('Image')
         axes[i, 0].axis('off')
 
-        axes[i, 1].imshow(label[:, :, 0], cmap='gray')
+        axes[i, 1].imshow(label, cmap='gray')
         axes[i, 1].set_title('Label')
         axes[i, 1].axis('off')
 
@@ -273,9 +298,11 @@ def compute_mean_and_std(ds_name: str):
 
 
 if __name__ == "__main__":
-    rugd_path = "/home/ales/school/robolab/road-segmentation/data/RUGD_old"
-    new_rugd_path = "/home/ales/school/robolab/road-segmentation/data/RUGD"
+    # rugd_path = "/home/ales/school/robolab/road-segmentation/data/RUGD_old"
+    # new_rugd_path = "/home/ales/school/robolab/road-segmentation/data/RUGD"
 
-    rugd_preprocessing(rugd_path, new_rugd_path)
+    # rugd_preprocessing(rugd_path, new_rugd_path)
 
     # compute_mean_and_std("rugd")
+
+    visualize_samples("rugd")
