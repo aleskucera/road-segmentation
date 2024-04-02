@@ -9,7 +9,7 @@ optimizer:
   weight_decay: 0.0001
 
 train:
-  batch_size: 2
+  batch_size: 32
   max_epochs: 100
   num_workers: 4
 
