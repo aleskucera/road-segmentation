@@ -18,7 +18,7 @@ class RoadDataModule(L.LightningDataModule):
     def __init__(self, cfg: DictConfig):
         super().__init__()
         self.cfg = cfg
-        transform = A.Compose([
+        self.transform = A.Compose([
             A.Normalize(mean=cfg.ds.mean, std=cfg.ds.std, max_pixel_value=1.0),
             A.HorizontalFlip(p=0.5),
             A.RandomBrightnessContrast(always_apply=False,
