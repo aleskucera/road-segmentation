@@ -14,7 +14,7 @@ def main(cfg: DictConfig) -> None:
     model = RoadModel(cfg, device)
     datamodule = RoadDataModule(cfg)
 
-    wandb_logger = WandbLogger(project="road-segmentation", name="baseline", log_model='all')
+    wandb_logger = WandbLogger(project="road-segmentation", name="baseline")
 
     trainer = L.Trainer(max_epochs=cfg.train.max_epochs,
                         accelerator="gpu",
