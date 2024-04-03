@@ -16,13 +16,17 @@ def main(cfg: DictConfig) -> None:
 
     wandb_logger = WandbLogger(project="road-segmentation", name="baseline", log_model='all')
 
-    trainer = L.Trainer(max_epochs=5, accelerator="gpu", devices=1, logger=wandb_logger, callbacks=[
-        LogPredictionsCallback(),
-        val_checkpoint,
-        regular_checkpoint
-    ])
+    trainer = L.Trainer(max_epochs=cfg.train.max_epochs,
+                        accelerator="gpu",
+                        devices=1,
+                        logger=wandb_logger,
+                        callbacks=[
+                            LogPredictionsCallback(),
+                            val_checkpoint,
+                            regular_checkpoint
+                        ])
     trainer.fit(model, datamodule=datamodule)
-    # trainer.test(model, datamodule=datamodule)
+    trainer.test(model, datamodule=datamodule)
 
 
 if __name__ == "__main__":
