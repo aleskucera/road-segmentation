@@ -22,6 +22,7 @@ class LogPredictionsCallback(Callback):
             batch_idx: int,
             dataloader_idx: int = 0,
     ) -> None:
+        print(f"Batch {batch_idx}")
         images, labels = batch
         image, label = images[0].to(pl_module.device), labels[0].to(pl_module.device)
 
