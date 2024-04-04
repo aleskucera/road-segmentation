@@ -1,0 +1,4 @@
+name: rugd
+path: data/RoboTour
+mean: [ 0.4040, 0.4040, 0.4016 ]
+std: [ 0.2646, 0.2668, 0.2685 ]

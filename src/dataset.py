@@ -18,7 +18,7 @@ class RoadDataModule(L.LightningDataModule):
     def __init__(self, cfg: DictConfig):
         super().__init__()
         self.cfg = cfg
-        self.transform = A.Compose([
+        self.train_transform = A.Compose([
             A.Normalize(mean=cfg.ds.mean, std=cfg.ds.std, max_pixel_value=1.0),
             A.HorizontalFlip(p=0.5),
             A.RandomBrightnessContrast(always_apply=False,
@@ -33,25 +33,28 @@ class RoadDataModule(L.LightningDataModule):
             A.PixelDropout(p=0.01),
         ])
 
+        self.test_transform = A.Compose([
+            A.Normalize(mean=cfg.ds.mean, std=cfg.ds.std, max_pixel_value=1.0),
+        ])
+
         self.train_ds = None
         self.val_ds = None
         self.test_ds = None
         self.predict_ds = None
 
     def setup(self, stage: str = None):
-        gen = torch.Generator().manual_seed(42)
-        test_samples = 10
+        # gen = torch.Generator().manual_seed(42)
+        # test_samples = 10
 
         if stage == "fit" or stage is None:
-            self.train_ds = RoadDataset(self.cfg, self.transform, split="train")
-            self.val_ds = RoadDataset(self.cfg, self.transform, split="val")
+            self.train_ds = RoadDataset(self.cfg, self.train_transform, split="train")
+            self.val_ds = RoadDataset(self.cfg, self.test_transform, split="val")
 
         if stage == "test" or stage is None:
-            self.test_ds, _ = random_split(self.val_ds, [test_samples, len(self.val_ds) - test_samples], generator=gen)
+            self.test_ds = RoadDataset(self.cfg, self.test_transform, split="test")
 
         if stage == "predict" or stage is None:
-            self.predict_ds, _ = random_split(self.val_ds, [test_samples, len(self.val_ds) - test_samples],
-                                              generator=gen)
+            self.predict_ds = RoadDataset(self.cfg, self.test_transform, split="test")
 
     def train_dataloader(self):
         return DataLoader(self.train_ds,
@@ -74,7 +77,7 @@ class RoadDataModule(L.LightningDataModule):
 
 class RoadDataset(Dataset):
     def __init__(self, cfg: DictConfig, transform: transforms.Compose = None, split: str = "train"):
-        assert split in ["train", "val"], f"Split {split} is not supported"
+        assert split in ["train", "val", "test"], f"Split {split} is not supported"
         self.cfg = cfg
         self.split = split
         self.path = cfg.ds.path
@@ -114,7 +117,11 @@ class RoadDataset(Dataset):
         label_path = self.labels[idx]
 
         image = np.array(Image.open(image_path).convert('RGB'))
-        label = np.array(Image.open(label_path))
+
+        if os.path.exists(label_path):
+            label = np.array(Image.open(label_path))
+        else:
+            label = np.zeros_like(image)
 
         if self.cfg.ds.name == "rugd":
             image = image / 255.0
@@ -135,8 +142,6 @@ class RoadDataset(Dataset):
         label = sample['mask']
 
         image = torch.tensor(image).permute(2, 0, 1).float()
-
-        # Convert the label to a PyTorch tensor
         label = torch.tensor(label).long()
 
         return image, label
@@ -157,7 +162,6 @@ class RoadDataset(Dataset):
 
 
 def map_to_label(rgb_image, color_map):
-    # Create a lookup table for RGB values and their corresponding labels
     rgb_to_label = np.zeros((256, 256, 256), dtype=np.uint8)
     for color_str, label in color_map.items():
         rgb = list(map(int, color_str.split(',')))
@@ -239,10 +243,12 @@ def rugd_preprocessing(path: str, new_path: str, train_ratio: float = 0.8):
 
     train_file = os.path.join(new_path, "train.txt")
     val_file = os.path.join(new_path, "val.txt")
+    test_file = os.path.join(new_path, "test.txt")
 
     # Clear the files
     open(train_file, 'w').close()
     open(val_file, 'w').close()
+    open(test_file, 'w').close()
 
     for dir in dirs:
         # Get the samples in the directory (must end with .png)
@@ -277,6 +283,10 @@ def rugd_preprocessing(path: str, new_path: str, train_ratio: float = 0.8):
 
         for subsequence in val_subsequences:
             with open(val_file, 'a') as f:
+                f.writelines([f"{sample}\n" for sample in subsequence])
+
+        for subsequence in val_subsequences:
+            with open(test_file, 'a') as f:
                 f.writelines([f"{sample}\n" for sample in subsequence])
 
 
