@@ -25,7 +25,7 @@ def main(cfg: DictConfig) -> None:
                             val_checkpoint,
                             regular_checkpoint
                         ])
-    trainer.fit(model, datamodule=datamodule)
+    # trainer.fit(model, datamodule=datamodule)
     trainer.test(model, datamodule=datamodule)
 
 

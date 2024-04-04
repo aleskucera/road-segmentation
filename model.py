@@ -50,6 +50,7 @@ class RoadModel(pl.LightningModule):
         return self.validation_step_outputs[-1]
 
     def test_step(self, batch, batch_idx):
+        print(f"Test step, batch {batch_idx}.")
         self.test_step_outputs.append(self.shared_step(batch, "test"))
         return self.test_step_outputs[-1]
 
