@@ -4,7 +4,7 @@ defaults:
   - model: deeplabv3_resnet50
 
 action: train
-checkpoint: null
+ckpt_path: null
 run_name: baseline
 
 optimizer:
