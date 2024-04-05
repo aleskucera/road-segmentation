@@ -1,6 +1,5 @@
 from pytorch_lightning.callbacks import ModelCheckpoint
 
-# Instantiate the ModelCheckpoint callback
 val_checkpoint = ModelCheckpoint(
     monitor='val_jaccard',
     dirpath='checkpoints/',

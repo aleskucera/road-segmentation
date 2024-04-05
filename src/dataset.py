@@ -1,4 +1,5 @@
 import os
+from typing import Tuple
 
 import yaml
 import torch
@@ -11,7 +12,7 @@ import matplotlib.pyplot as plt
 from omegaconf import OmegaConf
 from omegaconf import DictConfig
 from torchvision import transforms
-from torch.utils.data import Dataset, DataLoader, random_split
+from torch.utils.data import Dataset, DataLoader
 
 
 class RoadDataModule(L.LightningDataModule):
@@ -20,6 +21,7 @@ class RoadDataModule(L.LightningDataModule):
         self.cfg = cfg
         self.train_transform = A.Compose([
             A.Normalize(mean=cfg.ds.mean, std=cfg.ds.std, max_pixel_value=1.0),
+            A.Resize(550, 688),
             A.HorizontalFlip(p=0.5),
             A.RandomBrightnessContrast(always_apply=False,
                                        p=0.5,
@@ -35,6 +37,7 @@ class RoadDataModule(L.LightningDataModule):
 
         self.test_transform = A.Compose([
             A.Normalize(mean=cfg.ds.mean, std=cfg.ds.std, max_pixel_value=1.0),
+            A.Resize(550, 688),
         ])
 
         self.train_ds = None
@@ -43,9 +46,6 @@ class RoadDataModule(L.LightningDataModule):
         self.predict_ds = None
 
     def setup(self, stage: str = None):
-        # gen = torch.Generator().manual_seed(42)
-        # test_samples = 10
-
         if stage == "fit" or stage is None:
             self.train_ds = RoadDataset(self.cfg, self.train_transform, split="train")
             self.val_ds = RoadDataset(self.cfg, self.test_transform, split="val")
@@ -81,18 +81,19 @@ class RoadDataset(Dataset):
         self.cfg = cfg
         self.split = split
         self.path = cfg.ds.path
-        self.color_map = cfg.ds.color_map if hasattr(cfg.ds, "color_map") else None
-        self.train_map = OmegaConf.to_container(cfg.ds.train_map, resolve=True) if hasattr(cfg.ds,
-                                                                                           "train_map") else None
-
-        self.images = []
-        self.labels = []
-
-        self._load_data()
-
         self.transform = transform
+        self.color_map = cfg.ds.color_map if hasattr(cfg.ds, "color_map") else None
+        self.train_map = cfg.ds.train_map if hasattr(cfg.ds, "train_map") else None
 
-    def _load_data(self):
+        self.images, self.labels = self._load_data()
+
+    def _load_data(self) -> Tuple[list, list]:
+        """Load the names of the images and labels from the split file.
+
+        Returns:
+            Tuple[list, list]: List of image and label paths.
+        """
+
         images_dir = os.path.join(self.path, "Images")
         labels_dir = os.path.join(self.path, "Annotations")
 
@@ -102,17 +103,35 @@ class RoadDataset(Dataset):
             samples = f.readlines()
             samples = [sample.strip() for sample in samples]
 
-        self.images = [os.path.join(images_dir, sample) for sample in samples]
-        self.labels = [os.path.join(labels_dir, sample) for sample in samples]
+        images = [os.path.join(images_dir, sample) for sample in samples]
+        labels = [os.path.join(labels_dir, sample) for sample in samples]
 
         # Sort the images and labels
-        self.images.sort()
-        self.labels.sort()
+        images.sort()
+        labels.sort()
+
+        return images, labels
 
     def __len__(self):
         return len(self.images)
 
-    def __getitem__(self, idx):
+    def __getitem__(self, idx: int) -> Tuple[torch.Tensor, torch.Tensor]:
+        """Get the image and label at the specified index. This is done by following these steps:
+
+        1. Load the image and label from the disk.
+        2. If the image format is uint8, normalize it to [0, 1].
+        3. If the label is an RGB image, convert it to a label image using the color map.
+        4. If a train map is provided, map the labels to the desired classes.
+        5. Apply the transformation to the image and label.
+        6. Convert the image and label to tensors and permute the dimensions to (C, H, W).
+
+        Args:
+            idx (int): Index of the sample.
+
+        Returns:
+            Tuple[torch.Tensor, torch.Tensor]: Image and label tensors.
+        """
+
         image_path = self.images[idx]
         label_path = self.labels[idx]
 
@@ -146,9 +165,15 @@ class RoadDataset(Dataset):
 
         return image, label
 
-    def compute_mean_and_std(self):
-        mean = 0
-        std = 0
+    def compute_mean_and_std(self) -> Tuple[torch.Tensor, torch.Tensor]:
+        """Compute the mean and standard deviation of the image samples.
+
+        Returns:
+            Tuple[torch.Tensor, torch.Tensor]: Mean and standard deviation of the samples.
+        """
+
+        mean = torch.zeros(3)
+        std = torch.zeros(3)
         nb_samples = 0
         for data, _ in tqdm(self):
             data = data.view(data.size(0), -1)
@@ -161,7 +186,26 @@ class RoadDataset(Dataset):
         return mean, std
 
 
-def map_to_label(rgb_image, color_map):
+def map_to_label(rgb_image: np.ndarray, color_map: dict) -> np.ndarray:
+    """Convert an RGB image representing labels to a label image using a color map.
+
+    Color map example:
+        color_map = {
+            "0,0,0": 0,
+            "255,255,255": 1,
+            "0,255,0": 2,
+            "255,0,0": 3,
+            "0,0,255": 4
+        }
+
+    Args:
+        rgb_image (np.ndarray): RGB image with shape (H, W, 3).
+        color_map (dict): Color map [RGB -> Label].
+
+    Returns:
+        np.ndarray: Label image.
+    """
+
     rgb_to_label = np.zeros((256, 256, 256), dtype=np.uint8)
     for color_str, label in color_map.items():
         rgb = list(map(int, color_str.split(',')))
@@ -172,7 +216,17 @@ def map_to_label(rgb_image, color_map):
     return label_image
 
 
-def visualize_samples(ds_name, num_samples=3):
+def visualize_samples(ds_name: str, num_samples: int = 3) -> None:
+    """Visualize random samples from the dataset.
+
+    Args:
+        ds_name (str): Name of the dataset. (Should be in the conf/ds directory)
+        num_samples (int): Number of samples to visualize. (default: 3)
+
+    Returns:
+        None
+    """
+
     ds_file = f"conf/ds/{ds_name}.yaml"
     cfg = {"ds": {}}
 
@@ -183,6 +237,7 @@ def visualize_samples(ds_name, num_samples=3):
 
     transform = A.Compose([
         A.Normalize(mean=cfg.ds.mean, std=cfg.ds.std, max_pixel_value=1.0),
+        A.Resize(550, 688),
         A.HorizontalFlip(p=0.5),
         A.RandomBrightnessContrast(always_apply=False,
                                    p=0.5,
@@ -220,13 +275,17 @@ def visualize_samples(ds_name, num_samples=3):
     plt.show()
 
 
-def rugd_preprocessing(path: str, new_path: str, train_ratio: float = 0.8):
-    """
-    Preprocess the RUGD dataset by moving all the samples and labels to a single directory and creating split files.
+def rugd_preprocessing(path: str, new_path: str, train_ratio: float = 0.8) -> None:
+    """Preprocess the RUGD dataset by moving all the samples
+    and labels to a single directory and creating split files.
 
     Args:
         path (str): Path to the RUGD dataset.
         new_path (str): Path to save the preprocessed dataset.
+        train_ratio (float): Ratio of the training set. (default: 0.8)
+
+    Returns:
+        None
     """
 
     dirs = ["creek", "park-1", "park-2", "park-8", "trail", "trail-3", "trail-4", "trail-5", "trail-6", "trail-7",
@@ -290,7 +349,16 @@ def rugd_preprocessing(path: str, new_path: str, train_ratio: float = 0.8):
                 f.writelines([f"{sample}\n" for sample in subsequence])
 
 
-def compute_mean_and_std(ds_name: str):
+def compute_mean_and_std(ds_name: str) -> Tuple[torch.Tensor, torch.Tensor]:
+    """Compute the mean and standard deviation of the dataset.
+
+    Args:
+        ds_name (str): Name of the dataset. (Should be in the conf/ds directory)
+
+    Returns:
+        Tuple[torch.Tensor, torch.Tensor]: Mean and standard deviation of the dataset.
+    """
+
     ds_file = f"conf/ds/{ds_name}.yaml"
     cfg = {"ds": {}}
 
@@ -303,8 +371,7 @@ def compute_mean_and_std(ds_name: str):
 
     mean, std = ds.compute_mean_and_std()
 
-    print(f"Mean: {mean}")
-    print(f"Std: {std}")
+    return mean, std
 
 
 if __name__ == "__main__":

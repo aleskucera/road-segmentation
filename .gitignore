@@ -1,6 +1,7 @@
 data/*
-outputs/*
-wandb/*
-lightning_logs/*
+outputs/
+wandb/
+lightning_logs/
+checkpoints/
 
 !data/.gitkeep

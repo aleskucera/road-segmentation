@@ -6,19 +6,19 @@ from torchmetrics.classification import Accuracy, JaccardIndex
 
 
 class RoadModel(pl.LightningModule):
-    def __init__(self, config: DictConfig, device: torch.device):
+    def __init__(self, cfg: DictConfig, device: torch.device):
         super().__init__()
 
-        self.config = config
+        self.config = cfg
 
-        self.model = hydra.utils.instantiate(config.model)
+        self.model = hydra.utils.instantiate(cfg.model)
         self.criterion = torch.nn.CrossEntropyLoss()
 
-        self.std = torch.tensor(config.ds.std).view(1, 3, 1, 1).to(device)
-        self.mean = torch.tensor(config.ds.mean).view(1, 3, 1, 1).to(device)
+        self.std = torch.tensor(cfg.ds.std).view(1, 3, 1, 1).to(device)
+        self.mean = torch.tensor(cfg.ds.mean).view(1, 3, 1, 1).to(device)
 
-        self.accuracy = Accuracy(task="multiclass", num_classes=config.model.num_classes)
-        self.jaccard = JaccardIndex(task="multiclass", num_classes=config.model.num_classes)
+        self.accuracy = Accuracy(task="multiclass", num_classes=cfg.model.num_classes)
+        self.jaccard = JaccardIndex(task="multiclass", num_classes=cfg.model.num_classes)
 
         self.test_step_outputs = []
         self.training_step_outputs = []
