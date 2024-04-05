@@ -12,19 +12,23 @@
 #SBATCH --mail-type=BEGIN,FAIL,END        # what to send, valid type values are NONE, BEGIN, END, FAIL, REQUEUE, ALL
 
 display_help() {
-  echo "Usage: sbatch [sbatch options] test.batch [script options]"
-  echo "Sbatch Options:"
-  echo "  --nodes              Number of nodes (default: 1)"
-  echo "  --time               Time limit (default: 1-00:00:00)"
-  echo "  --error              Standard error file (default: test.out)"
-  echo "  --output             Standard output file (default: test.out)"
-  echo "  --partition          Partition name (default: amdgpu)"
-  echo "  --gpus-per-node      Number of GPUs per node (default: 1)"
-  echo "  --cpus-per-task      Number of CPUs per task (default: 8)"
-  echo
-  echo "Script Options:"
-  echo "  -b, --batch-size     Batch size (default: 16)"
-  echo "  -h, --help           Display help"
+  help_message="
+Usage: sbatch [sbatch options] test.batch [script options]
+
+  Sbatch Options:
+    --nodes              Number of nodes (default: 1)
+    --time               Time limit (default: 1-00:00:00)
+    --error              Standard error file (default: test.out)
+    --output             Standard output file (default: test.out)
+    --partition          Partition name (default: amdgpu)
+    --gpus-per-node      Number of GPUs per node (default: 1)
+    --cpus-per-task      Number of CPUs per task (default: 8)
+
+  Script Options:
+    -h, --help           Display help
+    -b, --batch-size     Batch size (default: 16)
+"
+  echo "$help_message"
   exit 1
 }
 

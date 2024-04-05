@@ -22,14 +22,11 @@ Remote machine should use Slurm Workload Manager to manage jobs. The following s
 
 1. Clone the repository and navigate to the root directory of the project.
 2. There is no need to install any requirements on the remote machine as the dependencies are loaded in the Slurm
-   script.
-   The script will load the modules required for the job.
-3. Run the following command to submit a job to the Slurm queue:
-   ```bash
-   sbatch [sbatch options] train.batch [script options]
-   ```
+   script. The script will load the modules required for the job.
 
 ## Usage
+
+## Local usage
 
 The code is divided into two main parts: training and testing. To run training on the local machine, run the following
 command:
@@ -43,3 +40,17 @@ To run testing on the local machine, run the following command:
    ```bash
    python main.py action=test ckpt_path=[checkpoint path] run_name=[run name]
    ```
+
+## Remote usage
+
+To run training on the remote machine, run the following command:
+
+   ```bash
+   sbatch [sbatch options] scripts/train.batch [script options]
+   ```
+
+To run testing on the remote machine, run the following command:
+
+   ```bash
+    sbatch [sbatch options] scripts/test.batch [script options]
+    ```
