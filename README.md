@@ -4,8 +4,18 @@ This repository contains the code for training and testing a road segmentation m
 
 ## Installation and setup
 
-The code is meant to be developed locally in a `Python 3.10` environment and then run on a remote server. The following
-instructions are for setting up the local development environment.
+The code is meant to be developed locally in a `Python 3.10` environment and then run on a remote server.
+Before we delve into the local and remote setup, we have to sign up to the [Weights & Biases](https://wandb.ai/)
+platform
+to log the training and testing process. After signing up, log in to the platform via the terminal by running the
+following
+command:
+
+```bash
+wandb login
+```
+
+This process is described in the [official documentation](https://docs.wandb.ai/quickstart).
 
 ### Local setup
 
