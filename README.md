@@ -4,12 +4,16 @@ This repository contains the code for training and testing a road segmentation m
 
 ## Installation and setup
 
-The code is meant to be developed locally in a Python=3.10 environment and then run on a remote server. The following
+The code is meant to be developed locally in a `Python=3.10` environment and then run on a remote server. The following
 instructions are for setting up the local development environment.
 
 ### Local setup
 
 1. Clone the repository and navigate to the root directory of the project.
+   ```bash
+   git clone https://github.com/aleskucera/road-segmentation.git
+   cd road-segmentation
+   ```
 2. Install PyTorch by following the instructions on the [official website](https://pytorch.org/get-started/locally/).
 3. Install other requirements by running the following command:
    ```bash
@@ -21,8 +25,14 @@ instructions are for setting up the local development environment.
 Remote machine should use Slurm Workload Manager to manage jobs. The following steps are for setting up the remote
 
 1. Clone the repository and navigate to the root directory of the project.
-2. There is no need to install any requirements on the remote machine as the dependencies are loaded in the Slurm
-   script. The script will load the modules required for the job.
+    ```bash
+    git clone https://github.com/aleskucera/road-segmentation
+    cd road-segmentation
+    ```
+
+> [!NOTE]  
+> There is no need to install any requirements on the remote machine as the dependencies are loaded in the Slurm
+> script. The script will load the modules required for the job. Check the `.env` file for the list of modules.
 
 ## Usage
 
@@ -54,3 +64,15 @@ To run testing on the remote machine, run the following command:
    ```bash
     sbatch [sbatch options] scripts/test.batch [script options]
     ```
+
+For more details on the options, run the following command:
+
+   ```bash
+   bash scripts/train.batch --help
+   ```
+
+or
+
+   ```bash
+   bash scripts/test.batch --help
+   ```

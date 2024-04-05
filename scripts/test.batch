@@ -27,6 +27,8 @@ Usage: sbatch [sbatch options] test.batch [script options]
   Script Options:
     -h, --help           Display help
     -b, --batch-size     Batch size (default: 16)
+    -r, --run-name       Run name (default: Test)
+    -c, --ckpt-path      Checkpoint path (default: checkpoints/e51-iou0.60.ckpt)
 "
   echo "$help_message"
   exit 1
@@ -35,11 +37,15 @@ Usage: sbatch [sbatch options] test.batch [script options]
 
 # Set default values for variables
 batch_size="16"
+run_name="Test"
+ckpt_path="checkpoints/e51-iou0.60.ckpt"
 
 # Parse command line arguments
 while [[ "$#" -gt 0 ]]; do
     case $1 in
         -b|--batch-size) batch_size="$2"; shift ;;
+        -r|--run-name) run_name="$2"; shift ;;
+        -c|--ckpt-path) ckpt_path="$2"; shift ;;
         -h|--help) display_help ;;
         *) echo "Unknown parameter passed: $1" >&2; exit 1 ;;
     esac
@@ -50,7 +56,7 @@ source .env
 
 WANDB_API_KEY=c54dade10e3c04fca21bf96016298e59b1e030ae python main.py \
             action=test \
-            run_name="Test" \
-            ckpt_path="checkpoints/e51-iou0.60.ckpt" \
+            run_name="$run_name" \
+            ckpt_path="$ckpt_path" \
             train.batch_size="$batch_size" \
             train.num_workers=8
