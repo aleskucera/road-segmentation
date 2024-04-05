@@ -63,7 +63,7 @@ To run testing on the remote machine, run the following command:
 
    ```bash
     sbatch [sbatch options] scripts/test.batch [script options]
-    ```
+   ```
 
 For more details on the options, run the following command:
 
