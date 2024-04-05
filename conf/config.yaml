@@ -3,7 +3,7 @@ defaults:
   - ds: rugd
   - model: deeplabv3_resnet50
 
-action: train
+action: null
 ckpt_path: null
 run_name: baseline
 

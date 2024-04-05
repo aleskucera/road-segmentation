@@ -42,13 +42,26 @@ The code is divided into two main parts: training and testing. To run training o
 command:
 
    ```bash
-   python main.py action=train ckpt_path=[checkpoint path] run_name=[run name]
+   python main.py action=train
    ```
 
 To run testing on the local machine, run the following command:
 
    ```bash
-   python main.py action=test ckpt_path=[checkpoint path] run_name=[run name]
+   python main.py action=test ckpt_path=[checkpoint path]
+   ```
+
+You can also override the default configuration like `dataset` by passing the desired configuration as a command line
+argument. For example, to change the dataset to `RoboTour`, run the following command:
+
+   ```bash
+   python main.py ds=robotour
+   ```
+
+For more details about default configuration and override options, run the following command:
+
+   ```bash
+   python main.py --help
    ```
 
 ## Remote usage
