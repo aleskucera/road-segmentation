@@ -47,6 +47,6 @@ source .env
 WANDB_API_KEY=c54dade10e3c04fca21bf96016298e59b1e030ae python main.py \
             action=test \
             run_name="Test" \
-            ckpt_path="checkpoints/epoch=51-val_jaccard=0.60.ckpt" \
+            ckpt_path="checkpoints/e51-iou0.60.ckpt" \
             train.batch_size="$batch_size" \
             train.num_workers=8

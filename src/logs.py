@@ -20,7 +20,7 @@ class LogPredictionsCallback(Callback):
         images, labels = batch
 
         for i, (image, label) in enumerate(zip(images, labels)):
-            step = batch_idx * len(images) + i
+            step = batch_idx * pl_module.cfg.train.batch_size + i
             image, label = image.to(pl_module.device), label.to(pl_module.device)
             self._log_prediction(trainer, pl_module, image, label, step=step)
 
@@ -30,8 +30,8 @@ class LogPredictionsCallback(Callback):
         logits = pl_module(image.unsqueeze(0)).squeeze(0)
 
         # Apply inverse normalization
-        mean = torch.tensor(pl_module.config.ds.mean).view(1, 3, 1, 1).to(pl_module.device)
-        std = torch.tensor(pl_module.config.ds.std).view(1, 3, 1, 1).to(pl_module.device)
+        mean = torch.tensor(pl_module.cfg.ds.mean).view(1, 3, 1, 1).to(pl_module.device)
+        std = torch.tensor(pl_module.cfg.ds.std).view(1, 3, 1, 1).to(pl_module.device)
         image = image * std + mean
         image = image.squeeze(0)
 
