@@ -4,7 +4,7 @@ This repository contains the code for training and testing a road segmentation m
 
 ## Installation and setup
 
-The code is meant to be developed locally in a `Python=3.10` environment and then run on a remote server. The following
+The code is meant to be developed locally in a `Python 3.10` environment and then run on a remote server. The following
 instructions are for setting up the local development environment.
 
 ### Local setup
