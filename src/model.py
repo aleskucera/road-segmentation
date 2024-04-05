@@ -54,4 +54,4 @@ class RoadModel(pl.LightningModule):
         return self.test_step_outputs[-1]
 
     def configure_optimizers(self):
-        return hydra.utils.instantiate(self.config.optimizer, self.model.parameters())
+        return hydra.utils.instantiate(self.cfg.optimizer, self.model.parameters())
