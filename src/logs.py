@@ -3,19 +3,19 @@ from typing import Any
 import wandb
 import torch
 import matplotlib.cm as cm
-import pytorch_lightning as pl
+import pytorch_lightning as L
 from pytorch_lightning.callbacks import Callback
 
 
 class LogPredictionsCallback(Callback):
-    def on_validation_epoch_start(self, trainer: pl.Trainer, pl_module: pl.LightningModule) -> None:
+    def on_validation_epoch_start(self, trainer: L.Trainer, pl_module: L.LightningModule) -> None:
         batch = next(iter(trainer.val_dataloaders))
         images, labels = batch
         image, label = images[0].to(pl_module.device), labels[0].to(pl_module.device)
 
         self._log_prediction(trainer, pl_module, image, label, step=trainer.current_epoch)
 
-    def on_test_batch_start(self, trainer: "pl.Trainer", pl_module: "pl.LightningModule",
+    def on_test_batch_start(self, trainer: "L.Trainer", pl_module: "L.LightningModule",
                             batch: Any, batch_idx: int, dataloader_idx: int = 0) -> None:
         images, labels = batch
 
@@ -25,7 +25,7 @@ class LogPredictionsCallback(Callback):
             self._log_prediction(trainer, pl_module, image, label, step=step)
 
     @staticmethod
-    def _log_prediction(trainer: "pl.Trainer", pl_module: "pl.LightningModule",
+    def _log_prediction(trainer: "L.Trainer", pl_module: "L.LightningModule",
                         image: torch.Tensor, label: torch.Tensor = None, step: int = 0):
         logits = pl_module(image.unsqueeze(0)).squeeze(0)
 
