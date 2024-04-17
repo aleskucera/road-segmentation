@@ -15,24 +15,32 @@ def main(cfg: DictConfig) -> None:
     model = RoadModel(cfg, device)
     datamodule = RoadDataModule(cfg)
 
-    wandb_logger = WandbLogger(project="road-segmentation", name=cfg.run_name)
+    # Print the cfg object
+    print(cfg)
+    for key, value in cfg.ds.train_map.items():
+        print(f"{key}: {value}")
+        print(f"Key type: {type(key)}")
+        print(f"Value type: {type(value)}")
+        break
 
-    trainer = L.Trainer(max_epochs=cfg.train.max_epochs,
-                        accelerator="gpu",
-                        devices=1,
-                        logger=wandb_logger,
-                        callbacks=[
-                            LogPredictionsCallback(),
-                            val_checkpoint,
-                            regular_checkpoint
-                        ])
-
-    if cfg.action == "train":
-        trainer.fit(model, datamodule=datamodule, ckpt_path=cfg.ckpt_path)
-    elif cfg.action == "test":
-        trainer.test(model, datamodule=datamodule, ckpt_path=cfg.ckpt_path)
-    else:
-        raise ValueError(f"Unknown action: {cfg.action}")
+    # wandb_logger = WandbLogger(project="road-segmentation", name=cfg.run_name)
+    #
+    # trainer = L.Trainer(max_epochs=cfg.train.max_epochs,
+    #                     accelerator="gpu",
+    #                     devices=1,
+    #                     logger=wandb_logger,
+    #                     callbacks=[
+    #                         LogPredictionsCallback(),
+    #                         val_checkpoint,
+    #                         regular_checkpoint
+    #                     ])
+    #
+    # if cfg.action == "train":
+    #     trainer.fit(model, datamodule=datamodule, ckpt_path=cfg.ckpt_path)
+    # elif cfg.action == "test":
+    #     trainer.test(model, datamodule=datamodule, ckpt_path=cfg.ckpt_path)
+    # else:
+    #     raise ValueError(f"Unknown action: {cfg.action}")
 
 
 if __name__ == "__main__":
