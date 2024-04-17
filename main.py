@@ -1,3 +1,5 @@
+import sklearn  # scikit-learn hack to fix the error on jetson
+
 import torch
 import hydra
 import pytorch_lightning as L
