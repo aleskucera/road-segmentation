@@ -23,6 +23,8 @@ def main(cfg: DictConfig) -> None:
         print(f"Value type: {type(value)}")
         break
 
+    print(f"{cfg.ds.train_map[0]}")
+
     # wandb_logger = WandbLogger(project="road-segmentation", name=cfg.run_name)
     #
     # trainer = L.Trainer(max_epochs=cfg.train.max_epochs,
