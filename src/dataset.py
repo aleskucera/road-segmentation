@@ -3,6 +3,8 @@ from typing import Tuple
 
 import yaml
 import torch
+import sklearn
+import skimage
 import numpy as np
 from PIL import Image
 from tqdm import tqdm
