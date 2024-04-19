@@ -42,8 +42,8 @@ def main(cfg: DictConfig) -> None:
         model.eval()
 
         # Load an image and its label
-        image_path = '/home/ales/school/robolab/road-segmentation/data/RUGD/Images/creek_00001.png'
-        label_path = '/home/ales/school/robolab/road-segmentation/data/RUGD/Annotations/creek_00001.png'
+        image_path = 'data/RUGD/Images/creek_00001.png'
+        label_path = 'data/RUGD/Annotations/creek_00001.png'
 
         image = np.array(Image.open(image_path).convert('RGB')) / 255.0
         label = np.array(Image.open(label_path).convert('RGB'))
