@@ -9,8 +9,8 @@ from tqdm import tqdm
 import albumentations as A
 import pytorch_lightning as L
 import matplotlib.pyplot as plt
-from torchvision import transforms
 from omegaconf import DictConfig, OmegaConf
+from albumentations.pytorch import ToTensorV2
 from torch.utils.data import Dataset, DataLoader
 
 from src.utils import rgb_to_label
@@ -34,11 +34,13 @@ class RoadDataModule(L.LightningDataModule):
                          var_limit=(0.05, 0.2),
                          per_channel=True, mean=0.0),
             A.PixelDropout(p=0.01),
+            ToTensorV2(),
         ])
 
         self.test_transform = A.Compose([
             A.Normalize(mean=cfg.ds.mean, std=cfg.ds.std, max_pixel_value=1.0),
             A.Resize(550, 688),
+            ToTensorV2(),
         ])
 
         self.train_ds = None
@@ -77,12 +79,12 @@ class RoadDataModule(L.LightningDataModule):
 
 
 class RoadDataset(Dataset):
-    def __init__(self, cfg: DictConfig, transform: transforms.Compose = None, split: str = "train"):
+    def __init__(self, cfg: DictConfig, transform: A.Compose = None, split: str = "train"):
         assert split in ["train", "val", "test"], f"Split {split} is not supported"
         self.cfg = cfg
         self.split = split
         self.path = cfg.ds.path
-        self.transform = transform
+        self.transform = transform if transform else A.Compose([ToTensorV2()])
         self.color_map = cfg.ds.color_map if hasattr(cfg.ds, "color_map") else None
         self.train_map = OmegaConf.to_container(cfg.ds.train_map) if hasattr(cfg.ds, "train_map") else None
 
@@ -153,16 +155,10 @@ class RoadDataset(Dataset):
         if self.train_map is not None:
             label = np.vectorize(self.train_map.get)(label)
 
-        sample = {'image': image, 'mask': label}
+        sample = self.transform(image=image, mask=label)
 
-        if self.transform:
-            sample = self.transform(**sample)
-
-        image = sample['image']
-        label = sample['mask']
-
-        image = torch.tensor(image).permute(2, 0, 1).float()
-        label = torch.tensor(label).long()
+        image = sample['image'].float()
+        label = sample['mask'].long()
 
         return image, label
 

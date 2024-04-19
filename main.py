@@ -57,11 +57,11 @@ def main(cfg: DictConfig) -> None:
         transform = A.Compose([
             A.Normalize(mean=cfg.ds.mean, std=cfg.ds.std, max_pixel_value=1.0),
             A.Resize(550, 688),
-            # ToTensorV2()
+            ToTensorV2()
         ])
         sample = transform(image=image, mask=label)
-        image = torch.tensor(sample['image']).permute(2, 0, 1).float().unsqueeze(0).to(device)
-        label = torch.tensor(sample['mask']).long().unsqueeze(0).to(device)
+        image = sample['image'].float().unsqueeze(0).to(device)
+        label = sample['mask'].long().unsqueeze(0).to(device)
 
         # Predict the label image
         with torch.no_grad():
