@@ -13,6 +13,8 @@ from torchvision import transforms
 from omegaconf import DictConfig, OmegaConf
 from torch.utils.data import Dataset, DataLoader
 
+from src.utils import rgb_to_label
+
 
 class RoadDataModule(L.LightningDataModule):
     def __init__(self, cfg: DictConfig):
@@ -146,7 +148,7 @@ class RoadDataset(Dataset):
 
         if len(label.shape) == 3:
             assert self.color_map is not None, "Color map must be provided for RGB labels"
-            label = map_to_label(label, self.color_map)
+            label = rgb_to_label(label, self.color_map)
 
         if self.train_map is not None:
             label = np.vectorize(self.train_map.get)(label)
@@ -183,36 +185,6 @@ class RoadDataset(Dataset):
         mean /= nb_samples
         std /= nb_samples
         return mean, std
-
-
-def map_to_label(rgb_image: np.ndarray, color_map: dict) -> np.ndarray:
-    """Convert an RGB image representing labels to a label image using a color map.
-
-    Color map example:
-        color_map = {
-            "0,0,0": 0,
-            "255,255,255": 1,
-            "0,255,0": 2,
-            "255,0,0": 3,
-            "0,0,255": 4
-        }
-
-    Args:
-        rgb_image (np.ndarray): RGB image with shape (H, W, 3).
-        color_map (dict): Color map [RGB -> Label].
-
-    Returns:
-        np.ndarray: Label image.
-    """
-
-    rgb_to_label = np.zeros((256, 256, 256), dtype=np.uint8)
-    for color_str, label in color_map.items():
-        rgb = list(map(int, color_str.split(',')))
-        rgb_to_label[rgb[0], rgb[1], rgb[2]] = label
-
-    # Map each pixel's RGB value to its corresponding label using the lookup table
-    label_image = rgb_to_label[rgb_image[:, :, 0], rgb_image[:, :, 1], rgb_image[:, :, 2]]
-    return label_image
 
 
 def visualize_samples(ds_name: str, num_samples: int = 3) -> None:
