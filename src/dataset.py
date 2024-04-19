@@ -3,17 +3,14 @@ from typing import Tuple
 
 import yaml
 import torch
-import sklearn
-import skimage
 import numpy as np
 from PIL import Image
 from tqdm import tqdm
 import albumentations as A
 import pytorch_lightning as L
 import matplotlib.pyplot as plt
-from omegaconf import OmegaConf
-from omegaconf import DictConfig
 from torchvision import transforms
+from omegaconf import DictConfig, OmegaConf
 from torch.utils.data import Dataset, DataLoader
 
 
@@ -85,7 +82,7 @@ class RoadDataset(Dataset):
         self.path = cfg.ds.path
         self.transform = transform
         self.color_map = cfg.ds.color_map if hasattr(cfg.ds, "color_map") else None
-        self.train_map = cfg.ds.train_map if hasattr(cfg.ds, "train_map") else None
+        self.train_map = OmegaConf.to_container(cfg.ds.train_map) if hasattr(cfg.ds, "train_map") else None
 
         self.images, self.labels = self._load_data()
 
